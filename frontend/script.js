@@ -5,14 +5,13 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
+let camera_x = 5;
+let camera_y = 5;
+let camera_z = 5;
 let camera_distance = 1;
 
 const updateCameraPosition = () => {
-    camera.position.set( 
-        camera_distance * Math.sin(camera_distance), 
-        camera_distance + Math.sin(camera_distance), 
-        camera_distance + Math.cos(camera_distance)
-    );
+    camera.position.set( camera_x, camera_y, camera_z );
     camera.lookAt( 0, 0, 0 );
 }
 updateCameraPosition();
@@ -43,32 +42,31 @@ arrow_helpers.forEach(arrow_helper => {
 
 const animate = () => {
     requestAnimationFrame( animate );
-
+    updateCameraPosition();
     renderer.render( scene, camera );
 };
 
 animate();
 
-const onScroll = (y) => {
-    if (y > 0) {
-        camera_distance += 0.1;
+document.onkeydown = (evt) => {
+    evt = evt || window.event;
+
+    if (evt.keyCode == '38') { // up
+        camera_z += 1;
     }
-    else {
-        camera_distance -= 0.1;
+    else if (evt.keyCode == '40') { // down
+        camera_z -= 1;
     }
-    updateCameraPosition();
-    console.log(`Camera distance: ${camera_distance}`);
+    else if (evt.keyCode == '37') { // left
+        camera_x -= 1;
+    }
+    else if (evt.keyCode == '39') { // right
+        camera_x += 1;
+    }
+    else if (evt.keyCode == '32') { // space
+        camera_y += 1;
+    }
+    else if (evt.keyCode == '16') { // shift
+        camera_y -= 1;
+    }
 };
-
-let ticking = false;
-
-window.addEventListener('scroll', e => {
-    const scroll = window.scrollY;
-    if (!ticking) {
-        window.requestAnimationFrame(() => {
-            onScroll(scroll);
-            ticking = false;
-        });
-    }
-    ticking = true;
-});
