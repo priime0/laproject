@@ -6,6 +6,17 @@
         <link rel="stylesheet" href="../style.css">
     </head>
     <body>
+        <div id="control">
+            <div id="optionselect">
+                <button class="voption">Vector Addition</button>
+                <button class="voption">Matrix Transformation</button>
+            </div>
+            <div id="app">
+                <vector-addition v-if="vectormode" :vectors="vectors" @addv="addVector" @showa="showAdd"></vector-addition>
+                <matrix-transformation v-if="!vectormode"></matrix-transformation>
+            </div>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
         <script src="http://threejs.org/build/three.js"></script>
         <script src="../script.js"></script>
     </body>

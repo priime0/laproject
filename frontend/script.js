@@ -1,4 +1,67 @@
-const scene = new THREE.Scene();
+Vue.component('vector', {
+    template: '<div class="vector"><input v-model="vec[0]"><input v-model="vec[1]"><input v-model="vec[2]"></div>',
+    props: {
+        vec: Array,
+    },
+});
+
+Vue.component('vector-addition', {
+    template: '<div id="vectors"><vector v-for="v in vectors" :key="v.id" :vec="v.vec"></vector><button v-on:click="addVector">Add Vector</button><button v-on:click="showAdd">Show Addition</button></div>',
+    props: {
+        vectors: Array,
+    },
+    methods: {
+        addVector() {
+            this.$emit('addv');
+        },
+        showAdd() {
+            this.$emit('showa');
+        },
+    }
+});
+
+Vue.component('matrix-transformation', {
+    template: ''
+});
+
+const app = new Vue({
+    el: '#app',
+    data: {
+        vectormode: true,
+        vectors: [
+            { 
+                id: 0,
+                vec: ["0", "0", "0"]
+            }, 
+            { 
+                id: 1,
+                vec: ["0", "0", "0"] 
+            },
+        ],
+        matrix: [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+    },
+    methods: {
+        addVector: function() {
+            this.vectors.push({
+                id: this.vectors.length,
+                vec: [0, 0, 0]
+            });
+        },
+        showAdd: function() {
+            reset_scene();
+            let x = 0, y = 0, z = 0;
+            this.vectors.forEach(vector => {
+                x += Number(vector.vec[0]);
+                y += Number(vector.vec[1]);
+                z += Number(vector.vec[2]);
+                add_vector_to_scene(vector.vec);
+            });
+            add_result_to_scene(x, y, z);
+        }
+    }
+});
+
+let scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
 const renderer = new THREE.WebGLRenderer();
@@ -16,29 +79,52 @@ const updateCameraPosition = () => {
 }
 updateCameraPosition();
 
-const material = new THREE.LineBasicMaterial( { color: 0x0000ff } );
+const unit_arrows = [];
+const vectors = [];
+const arrows = [];
 
-const unit_vectors = [];
+const reset_scene = () => {
+    scene = new THREE.Scene();
+    const unit_vectors = [];
 
-unit_vectors.push(new THREE.Vector3( 1, 0, 0 ));
-unit_vectors.push(new THREE.Vector3( 0, 1, 0 ));
-unit_vectors.push(new THREE.Vector3( 0, 0, 1 ));
+    unit_vectors.push(new THREE.Vector3( 1, 0, 0 ));
+    unit_vectors.push(new THREE.Vector3( 0, 1, 0 ));
+    unit_vectors.push(new THREE.Vector3( 0, 0, 1 ));
 
-const origin = new THREE.Vector3( 0, 0, 0 );
-const length = 1;
-const red_hex = 0xff0000;
-const green_hex = 0x00ff00;
-const blue_hex = 0x0000ff;
+    const origin = new THREE.Vector3( 0, 0, 0 );
+    const length = 1;
+    const red_hex = 0xff0000;
+    const green_hex = 0x00ff00;
+    const blue_hex = 0x0000ff;
 
-const arrow_helpers = [];
+    unit_arrows.push(new THREE.ArrowHelper(unit_vectors[0], origin, length, red_hex));
+    unit_arrows.push(new THREE.ArrowHelper(unit_vectors[1], origin, length, blue_hex));
+    unit_arrows.push(new THREE.ArrowHelper(unit_vectors[2], origin, length, green_hex));
 
-arrow_helpers.push(new THREE.ArrowHelper(unit_vectors[0], origin, length, red_hex));
-arrow_helpers.push(new THREE.ArrowHelper(unit_vectors[1], origin, length, blue_hex));
-arrow_helpers.push(new THREE.ArrowHelper(unit_vectors[2], origin, length, green_hex));
+    unit_arrows.forEach(arrow_helper => {
+        scene.add(arrow_helper);
+    });
+}
+reset_scene();
 
-arrow_helpers.forEach(arrow_helper => {
-    scene.add(arrow_helper);
-});
+const add_vector_to_scene = (vec) => {
+    const x = vec[0];
+    const y = vec[1];
+    const z = vec[2];
+    const vector = new THREE.Vector3( x, y, z );
+    const origin = new THREE.Vector3( 0, 0, 0 );
+    const length = origin.distanceTo(vector);
+    const hex = 0xffff00;
+    scene.add(new THREE.ArrowHelper( vector.normalize(), origin, length, hex ));
+};
+
+const add_result_to_scene = (x, y, z) => {
+    const vector = new THREE.Vector3( x, y, z );
+    const origin = new THREE.Vector3( 0, 0, 0 );
+    const length = origin.distanceTo(vector);
+    const hex = 0xffffff;
+    scene.add(new THREE.ArrowHelper( vector.normalize(), origin, length, hex ));
+};
 
 const animate = () => {
     requestAnimationFrame( animate );
@@ -51,22 +137,60 @@ animate();
 document.onkeydown = (evt) => {
     evt = evt || window.event;
 
+    const cam_change = 0.1;
+
     if (evt.keyCode == '38') { // up
-        camera_z += 1;
+        evt.preventDefault();
+        camera_z += cam_change;
     }
     else if (evt.keyCode == '40') { // down
-        camera_z -= 1;
+        evt.preventDefault();
+        camera_z -= cam_change;
     }
     else if (evt.keyCode == '37') { // left
-        camera_x -= 1;
+        evt.preventDefault();
+        camera_x -= cam_change;
     }
     else if (evt.keyCode == '39') { // right
-        camera_x += 1;
+        evt.preventDefault();
+        camera_x += cam_change;
     }
     else if (evt.keyCode == '32') { // space
-        camera_y += 1;
+        evt.preventDefault();
+        camera_y += cam_change;
     }
     else if (evt.keyCode == '16') { // shift
-        camera_y -= 1;
+        camera_y -= cam_change;
+    }
+};
+
+let vector_option = 1;
+const vbuttons = [...document.getElementsByClassName('voption')];
+
+vbuttons.forEach((button, index) => {
+    button.addEventListener("click", e => {
+        reset_scene();
+        change_area(index+1);
+    });
+});
+
+const change_to_vector_addition = () => {
+    app.vectormode = true;
+};
+
+const change_to_matrix_transformation = () => {
+    app.vectormode = false;
+};
+
+const change_area = (option) => {
+    vector_option = option || 1;
+    if (vector_option === 1) {
+        change_to_vector_addition();
+    }
+    else if (vector_option === 2) {
+        change_to_matrix_transformation();
+    }
+    else {
+        change_to_vector_addition();
     }
 };
