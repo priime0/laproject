@@ -21,7 +21,15 @@ Vue.component('vector-addition', {
 });
 
 Vue.component('matrix-transformation', {
-    template: ''
+    template: '<div><input v-model="matrix[0][0]"><input v-model="matrix[0][1]"><input v-model="matrix[0][2]"><br><input v-model="matrix[1][0]"><input v-model="matrix[1][1]"><input v-model="matrix[1][2]"><br><input v-model="matrix[2][0]"><input v-model="matrix[2][1]"><input v-model="matrix[2][2]"><br><button v-on:click="showTransform">Show Transformation</button></div>',
+    props: {
+        matrix: Array,
+    },
+    methods: {
+        showTransform() {
+            this.$emit('showt');
+        },
+    },
 });
 
 const app = new Vue({
@@ -38,7 +46,7 @@ const app = new Vue({
                 vec: ["0", "0", "0"] 
             },
         ],
-        matrix: [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+        matrix: [["1", "0", "0"], ["0", "1", "0"], ["0", "0", "1"]]
     },
     methods: {
         addVector: function() {
@@ -54,10 +62,17 @@ const app = new Vue({
                 x += Number(vector.vec[0]);
                 y += Number(vector.vec[1]);
                 z += Number(vector.vec[2]);
-                add_vector_to_scene(vector.vec);
+                const hex = 0xffff00;
+                add_vector_to_scene(vector.vec, hex);
             });
-            add_result_to_scene(x, y, z);
-        }
+            add_vector_to_scene([x, y, z], 0xffffff);
+        },
+        showTransform: function() {
+            reset_scene();
+            add_vector_to_scene([Number(this.matrix[0][0]), Number(this.matrix[1][0]), Number(this.matrix[2][0])], 0xff0000);
+            add_vector_to_scene([Number(this.matrix[0][1]), Number(this.matrix[1][1]), Number(this.matrix[2][1])], 0x0000ff);
+            add_vector_to_scene([Number(this.matrix[0][2]), Number(this.matrix[1][2]), Number(this.matrix[2][2])], 0x00ff00);
+        },
     }
 });
 
@@ -107,22 +122,13 @@ const reset_scene = () => {
 }
 reset_scene();
 
-const add_vector_to_scene = (vec) => {
+const add_vector_to_scene = (vec, hex) => {
     const x = vec[0];
     const y = vec[1];
     const z = vec[2];
     const vector = new THREE.Vector3( x, y, z );
     const origin = new THREE.Vector3( 0, 0, 0 );
     const length = origin.distanceTo(vector);
-    const hex = 0xffff00;
-    scene.add(new THREE.ArrowHelper( vector.normalize(), origin, length, hex ));
-};
-
-const add_result_to_scene = (x, y, z) => {
-    const vector = new THREE.Vector3( x, y, z );
-    const origin = new THREE.Vector3( 0, 0, 0 );
-    const length = origin.distanceTo(vector);
-    const hex = 0xffffff;
     scene.add(new THREE.ArrowHelper( vector.normalize(), origin, length, hex ));
 };
 
