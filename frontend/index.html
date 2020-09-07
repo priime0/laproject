@@ -12,8 +12,17 @@
                 <button class="voption">Matrix Transformation</button>
             </div>
             <div id="app">
-                <vector-addition v-if="vectormode" :vectors="vectors" @addv="addVector" @showa="showAdd"></vector-addition>
-                <matrix-transformation v-if="!vectormode"></matrix-transformation>
+                <div v-if="vectormode">
+                    <h2>Instructions</h2>
+                    <p>Assign values to vectors. If you need more, click "Add Vector". Once you've finished assigning values, click "Show Addition". Use RIGHT/LEFT arrows to move along the x coordinates. Use UP/DOWN arrows to move along the z coordinates. Use space and shift (you need to spam shift) to move along the y coordinates.</p>
+                    <vector-addition :vectors="vectors" @addv="addVector" @showa="showAdd"></vector-addition>
+                </div>
+                <div v-if="!vectormode">
+                    <h2>Instructions</h2>
+                    <p>Modify the transformation matrix, and see the result of how the unit vectors are transformed by clicking "Show Transformation". Use RIGHT/LEFT arrows to move along the x coordinates. Use UP/DOWN arrows to move along the z coordinates. Use space and shift (you need to spam shift) to move along the y coordinates.</p>
+                    <h3>Transformation Matrix</h3>
+                    <matrix-transformation :matrix="matrix"></matrix-transformation>
+                </div>
             </div>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
