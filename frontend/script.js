@@ -21,9 +21,10 @@ Vue.component('vector-addition', {
 });
 
 Vue.component('matrix-transformation', {
-    template: '<div><input v-model="matrix[0][0]"><input v-model="matrix[0][1]"><input v-model="matrix[0][2]"><br><input v-model="matrix[1][0]"><input v-model="matrix[1][1]"><input v-model="matrix[1][2]"><br><input v-model="matrix[2][0]"><input v-model="matrix[2][1]"><input v-model="matrix[2][2]"><br><button v-on:click="showTransform">Show Transformation</button></div>',
+    template: '<div><input v-model="matrix[0][0]"><input v-model="matrix[0][1]"><input v-model="matrix[0][2]"><br><input v-model="matrix[1][0]"><input v-model="matrix[1][1]"><input v-model="matrix[1][2]"><br><input v-model="matrix[2][0]"><input v-model="matrix[2][1]"><input v-model="matrix[2][2]"><br><h3>Vector</h3><vector :vec="mvec"></vector><button v-on:click="showTransform">Show Transformation</button></div>',
     props: {
         matrix: Array,
+        mvec: Array,
     },
     methods: {
         showTransform() {
@@ -46,6 +47,7 @@ const app = new Vue({
                 vec: ["0", "0", "0"] 
             },
         ],
+        mvec: ["0", "0", "0"],
         matrix: [["1", "0", "0"], ["0", "1", "0"], ["0", "0", "1"]]
     },
     methods: {
@@ -69,9 +71,16 @@ const app = new Vue({
         },
         showTransform: function() {
             reset_scene();
+            add_vector_to_scene(this.mvec, 0xffffff);
             add_vector_to_scene([Number(this.matrix[0][0]), Number(this.matrix[1][0]), Number(this.matrix[2][0])], 0xff0000);
             add_vector_to_scene([Number(this.matrix[0][1]), Number(this.matrix[1][1]), Number(this.matrix[2][1])], 0x0000ff);
             add_vector_to_scene([Number(this.matrix[0][2]), Number(this.matrix[1][2]), Number(this.matrix[2][2])], 0x00ff00);
+            const new_vec = [
+                Number(this.matrix[0][0]) * Number(this.mvec[0]) + Number(this.matrix[0][1]) * Number(this.mvec[1]) + Number(this.matrix[0][2]) * Number(this.mvec[2]),
+                Number(this.matrix[1][0]) * Number(this.mvec[0]) + Number(this.matrix[1][1]) * Number(this.mvec[1]) + Number(this.matrix[1][2]) * Number(this.mvec[2]),
+                Number(this.matrix[2][0]) * Number(this.mvec[0]) + Number(this.matrix[2][1]) * Number(this.mvec[1]) + Number(this.matrix[2][2]) * Number(this.mvec[2])
+            ];
+            add_vector_to_scene(new_vec, 0xffffff);
         },
     }
 });
